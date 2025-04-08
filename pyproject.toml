@@ -1,0 +1,25 @@
+[project]
+name = "library-system"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Eduard Kaverinskyi",email = "eduard.kaverinskyi@gmail.com"}
+]
+license = {text = "GPLv3"}
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django (>=5.2,<6.0)"
+]
+
+[tool.poetry]
+package-mode=false
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+isort = "^6.0.1"
+mypy = "^1.15.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
