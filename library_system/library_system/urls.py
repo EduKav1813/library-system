@@ -16,7 +16,9 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.urls import include, path
+from library import views as library_views
 from library.viewsets import AuthorViewSet, BookViewSet
 from rest_framework import routers
 
@@ -25,6 +27,13 @@ router.register(r"books", BookViewSet)
 router.register(r"authors", AuthorViewSet)
 
 urlpatterns = [
-    path("", include(router.urls)),
+    path("", library_views.index_template, name="index"),
     path("admin/", admin.site.urls),
+    path("api/", include(router.urls)),
+    path("api-auth/", include("rest_framework.urls")),
+    path(
+        "login/", auth_views.LoginView.as_view(template_name="login.html"), name="login"
+    ),
+    path("logout/", auth_views.LogoutView.as_view(next_page="/"), name="logout"),
+    path("register/", library_views.register_view, name="register"),
 ]

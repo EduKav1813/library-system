@@ -9,3 +9,7 @@ class Book(models.Model):
     ibn = models.CharField()
     title = models.CharField()
     authors = models.ManyToManyField(Author, related_name="books")
+
+    def get_authors_display(self):
+        """Return comma-separated list of author names"""
+        return ", ".join([author.full_name for author in self.authors.all()])

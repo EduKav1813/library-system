@@ -1,3 +1,45 @@
-from django.shortcuts import render
+from django.contrib import messages
+from django.contrib.auth.forms import UserCreationForm
+from django.shortcuts import redirect, render
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 
-# Create your views here.
+from .models import Book
+from .serializers import BookSerializer
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def index(request):
+    """
+    Public view for the landing page
+    """
+    recent_books = Book.objects.all().order_by("-id")[:5]
+    serializer = BookSerializer(recent_books, many=True)
+    return Response(
+        {"message": "Welcome to the Library API", "recent_books": serializer.data}
+    )
+
+
+def index_template(request):
+    """
+    Render HTML landing page
+    """
+    recent_books = Book.objects.all().order_by("-id")[:5]
+    return render(request, "index.html", {"recent_books": recent_books})
+
+
+def register_view(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get("username")
+            messages.success(
+                request, f"Account created for {username}! You can now log in."
+            )
+            return redirect("login")
+    else:
+        form = UserCreationForm()
+    return render(request, "register.html", {"form": form})

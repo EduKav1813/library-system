@@ -56,7 +56,7 @@ ROOT_URLCONF = "library_system.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "library/templates/pages"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -130,9 +130,11 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",  # Optional: for browsable API
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
+        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",  # Requires login
     ],
 }
+
+LOGIN_REDIRECT_URL = "/"  # Redirect to homepage

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .book {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Welcome to the Library System</h1>
+        <div class="auth-buttons">
+            {% if user.is_authenticated %}
+                <span>Hello, {{ user.username }}!</span>
+                <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="button">Logout</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="button">Login</a>
+                <a href="{% url 'register' %}" class="button">Register</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <h2>Recent Books</h2>
+    <div class="books-list">
+        {% for book in recent_books %}
+            <div class="book">
+                <h3>{{ book.title }}</h3>
+                <p><strong>Authors:</strong> {{ book.get_authors_display }}</p>
+                <p>{{ book.summary }}</p>
+                <p><strong>IBN:</strong> {{ book.ibn }}</p>
+            </div>
+        {% empty %}
+            <p>No books available.</p>
+        {% endfor %}
+    </div>
+    
+    <div>
+        <h3>API Access</h3>
+        <p>To access the full library API, please login or register.</p>
+        <ul>
+            <li><a href="/api/books/">Books API</a> (requires authentication)</li>
+            <li><a href="/api/authors/">Authors API</a> (requires authentication)</li>
+        </ul>
+    </div>
+</body>
+</html>
