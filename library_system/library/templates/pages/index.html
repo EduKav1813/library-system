@@ -115,7 +115,7 @@
         }
       
         try {
-          const response = await fetch('/add-book-by-isbn/', {
+          const response = await fetch('/api/add-by-isbn/', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -129,6 +129,7 @@
           if (response.ok) {
             messageDiv.textContent = `✅ Book "${data.title}" added successfully!`
             messageDiv.style.color = 'green'
+            refreshRecentBooks()
           } else {
             messageDiv.textContent = `❌ ${data.error || 'Failed to add book.'}`
             messageDiv.style.color = 'red'
@@ -153,6 +154,27 @@
           }
         }
         return cookieValue
+      }
+      
+      async function refreshRecentBooks() {
+        const response = await fetch('/api/get-recent/')
+        if (!response.ok) return
+        const data = await response.json()
+        const books = data.recent_books;
+        const booksList = document.querySelector('.books-list')
+        booksList.innerHTML = '' // clear current
+      
+        books.forEach((book) => {
+          const div = document.createElement('div')
+          div.className = 'book'
+          div.innerHTML = `
+              <h3>${book.title}</h3>
+              <p><strong>Authors:</strong> ${book.authors}</p>
+              <p>${book.summary}</p>
+              <p><strong>isbn:</strong> ${book.isbn}</p>
+              `
+          booksList.appendChild(div)
+        })
       }
     </script>
   </body>

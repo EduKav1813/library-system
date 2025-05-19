@@ -36,5 +36,6 @@ urlpatterns = [
     ),
     path("logout/", auth_views.LogoutView.as_view(next_page="/"), name="logout"),
     path("register/", library_views.register_view, name="register"),
-    path("add-book-by-isbn/", library_views.add_book_by_isbn, name="add-book-by-isbn"),
+    path("api/add-by-isbn/", library_views.add_book_by_isbn, name="add-book-by-isbn"),
+    path("api/get-recent/", library_views.get_recent_books, name="get-recent-books"),
 ]

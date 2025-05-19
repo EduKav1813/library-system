@@ -13,3 +13,9 @@ class Book(models.Model):
     def get_authors_display(self):
         """Return comma-separated list of author names"""
         return ", ".join([author.full_name for author in self.authors.all()])
+
+    def get_recent_books(self, n=5) -> "Book":
+        if n < 1:
+            raise ValueError("Number of recent books should be positive")
+
+        return Book.objects.all().order_by("-id")[:n]

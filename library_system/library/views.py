@@ -1,13 +1,13 @@
+import requests
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import redirect, render
+from rest_framework import permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework import status, permissions
-import requests
 
-from .models import Book, Author
+from .models import Author, Book
 from .serializers import BookSerializer
 
 
@@ -95,3 +95,22 @@ def add_book_by_isbn(request):
     book.authors.set(Author.objects.filter(full_name__in=authors))
     serializer = BookSerializer(book)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_recent_books(request):
+    """
+    Get n recent books
+    """
+    try:
+        n = int(request.query_params.get("number_of_books", 5))
+    except (TypeError, ValueError):
+        return Response({"error": "'number_of_books' must be an integer"}, status=400)
+
+    if n > 100:
+        return Response({"error": "'number_of_books' cannot exceed 100"}, status=400)
+
+    recent_books = Book.get_recent_books(n)
+    serializer = BookSerializer(recent_books, many=True)
+    return Response({"recent_books": serializer.data})
