@@ -36,4 +36,5 @@ urlpatterns = [
     ),
     path("logout/", auth_views.LogoutView.as_view(next_page="/"), name="logout"),
     path("register/", library_views.register_view, name="register"),
+    path("add-book-by-isbn/", library_views.add_book_by_isbn, name="add-book-by-isbn"),
 ]

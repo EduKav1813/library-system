@@ -53,6 +53,19 @@
             {% endif %}
         </div>
     </div>
+
+    {% if user.is_authenticated %}
+    <div style="margin-top: 20px;">
+        <h2>Add a Book by ISBN</h2>
+        <form id="isbn-form">
+            {% csrf_token %}
+            <input type="text" id="isbn-input" placeholder="Enter ISBN" required>
+            <button type="submit" class="button">Add Book</button>
+        </form>
+        <div id="message" style="margin-top: 10px;"></div>
+    </div>
+    {% endif %}
+
     
     <h2>Recent Books</h2>
     <div class="books-list">
@@ -68,6 +81,7 @@
         {% endfor %}
     </div>
     
+    
     <div>
         <h3>API Access</h3>
         <p>To access the full library API, please login or register.</p>
@@ -76,5 +90,65 @@
             <li><a href="/api/authors/">Authors API</a> (requires authentication)</li>
         </ul>
     </div>
+    
+    <script>
+        document.getElementById('isbn-form').addEventListener('submit', async function (e) {
+            e.preventDefault(); // Prevent default form submission
+            
+            const isbn = document.getElementById('isbn-input').value.trim();
+            const messageDiv = document.getElementById('message');
+            
+            // Clear previous message
+            messageDiv.textContent = '';
+            messageDiv.style.color = '';
+            
+            if (!isbn) {
+                messageDiv.textContent = "Please enter an ISBN.";
+                messageDiv.style.color = 'red';
+                return;
+            }
+            
+            try {
+                const response = await fetch("/add-book-by-isbn/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({ isbn: isbn }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    messageDiv.textContent = `✅ Book "${data.title}" added successfully!`;
+                    messageDiv.style.color = 'green';
+                } else {
+                    messageDiv.textContent = `❌ ${data.error || 'Failed to add book.'}`;
+                    messageDiv.style.color = 'red';
+                }
+            } catch (err) {
+                messageDiv.textContent = "❌ An unexpected error occurred.";
+                messageDiv.style.color = 'red';
+                console.error(err);
+            }
+        });
+        
+        // CSRF helper for Django
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";").map(c => c.trim());
+                for (let cookie of cookies) {
+                    if (cookie.startsWith(name + "=")) {
+                        cookieValue = decodeURIComponent(cookie.split("=")[1]);
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+    
 </body>
 </html>
