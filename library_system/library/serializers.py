@@ -15,6 +15,6 @@ class AuthorSerializer(serializers.ModelSerializer):
 class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
-        fields = ["ibn", "title", "authors"]
+        fields = ["isbn", "title", "authors"]
 
     permission_classes = [IsAuthenticated]

@@ -6,7 +6,7 @@ class Author(models.Model):
 
 
 class Book(models.Model):
-    ibn = models.CharField()
+    isbn = models.CharField()
     title = models.CharField()
     authors = models.ManyToManyField(Author, related_name="books")
 

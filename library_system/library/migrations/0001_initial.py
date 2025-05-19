@@ -37,7 +37,7 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("ibn", models.CharField()),
+                ("isbn", models.CharField()),
                 ("title", models.CharField()),
                 (
                     "authors",

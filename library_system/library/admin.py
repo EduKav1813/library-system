@@ -14,9 +14,9 @@ class BookAdmin(admin.ModelAdmin):
     list_display = (
         "title",
         "display_authors",
-        "ibn",
+        "isbn",
     )
-    search_fields = ["title", "authors__name", "ibn"]
+    search_fields = ["title", "authors__name", "isbn"]
     filter_horizontal = (
         "authors",
     )  # This creates a nice interface for selecting multiple authors
