@@ -49,30 +49,28 @@ def register_view(request):
 
 @api_view(["POST"])
 @permission_classes([permissions.IsAuthenticated])
-def add_book_by_isbn(request):
-    """Add a book from ISBN alone.
+def add_book_by_isbn_10(request):
+    """Add a book from ISBN-10 alone.
 
     All the book data will be fetched via the OpenLibrary API.
     """
-    isbn = request.data.get("isbn", "").strip()
+    isbn_10 = request.data.get("isbn_10", "").strip()
 
-    if not isbn:
+    if not isbn_10:
         return Response(
-            {"error": "ISBN is required."}, status=status.HTTP_400_BAD_REQUEST
+            {"error": "ISBN-10 is required."}, status=status.HTTP_400_BAD_REQUEST
         )
 
-    if Book.objects.filter(isbn=isbn).exists():
+    if Book.objects.filter(isbn_10=isbn_10).exists():
         return Response(
             {"error": "Book already exists."}, status=status.HTTP_400_BAD_REQUEST
         )
 
     # Fetch from Open Library API
-    api_url = (
-        f"https://openlibrary.org/api/books?bibkeys=ISBN:{isbn}&format=json&jscmd=data"
-    )
+    api_url = f"https://openlibrary.org/api/books?bibkeys=ISBN:{isbn_10}&format=json&jscmd=data"
     response = requests.get(api_url)
     data = response.json()
-    book_data = data.get(f"ISBN:{isbn}")
+    book_data = data.get(f"ISBN:{isbn_10}")
 
     if not book_data:
         return Response(
@@ -90,7 +88,7 @@ def add_book_by_isbn(request):
 
     book = Book.objects.create(
         title=title,
-        isbn=isbn,
+        isbn_10=isbn_10,
     )
     book.authors.set(Author.objects.filter(full_name__in=authors))
     serializer = BookSerializer(book)
