@@ -13,8 +13,10 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 
 class BookSerializer(serializers.ModelSerializer):
+    authors = AuthorSerializer(many=True)
+
     class Meta:
         model = Book
-        fields = ["isbn", "title", "authors"]
+        fields = ["title", "summary", "isbn_10", "authors"]
 
     permission_classes = [IsAuthenticated]

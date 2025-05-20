@@ -59,7 +59,7 @@
         <h2>Add a Book by ISBN</h2>
         <form id="isbn-form">
           {% csrf_token %}
-          <input type="text" id="isbn-input" placeholder="Enter ISBN" required />
+          <input type="text" id="isbn-10-input" placeholder="Enter ISBN-10" required />
           <button type="submit" class="button">Add Book</button>
         </form>
         <div id="message" style="margin-top: 10px;"></div>
@@ -67,22 +67,7 @@
     {% endif %}
 
     <h2>Recent Books</h2>
-    <div class="books-list">
-      {% for book in recent_books %}
-        <div class="book">
-          <h3>{{ book.title }}</h3>
-          <p>
-            <strong>Authors:</strong> {{ book.get_authors_display }}
-          </p>
-          <p>{{ book.summary }}</p>
-          <p>
-            <strong>isbn:</strong> {{ book.isbn }}
-          </p>
-        </div>
-      {% empty %}
-        <p>No books available.</p>
-      {% endfor %}
-    </div>
+    <div class="books-list"></div>
 
     <div>
       <h3>API Access</h3>
@@ -98,30 +83,34 @@
     </div>
 
     <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        refreshRecentBooks()
+      })
+      
       document.getElementById('isbn-form').addEventListener('submit', async function (e) {
         e.preventDefault() // Prevent default form submission
       
-        const isbn = document.getElementById('isbn-input').value.trim()
+        const isbn_10 = document.getElementById('isbn-10-input').value.trim()
         const messageDiv = document.getElementById('message')
       
         // Clear previous message
         messageDiv.textContent = ''
         messageDiv.style.color = ''
       
-        if (!isbn) {
-          messageDiv.textContent = 'Please enter an ISBN.'
+        if (!isbn_10) {
+          messageDiv.textContent = 'Please enter an ISBN-10.'
           messageDiv.style.color = 'red'
           return
         }
       
         try {
-          const response = await fetch('/api/add-by-isbn/', {
+          const response = await fetch('/api/add-by-isbn-10/', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'X-CSRFToken': getCookie('csrftoken')
             },
-            body: JSON.stringify({ isbn: isbn })
+            body: JSON.stringify({ isbn_10: isbn_10 })
           })
       
           const data = await response.json()
@@ -160,19 +149,24 @@
         const response = await fetch('/api/get-recent/')
         if (!response.ok) return
         const data = await response.json()
-        const books = data.recent_books;
+        const books = data.recent_books
         const booksList = document.querySelector('.books-list')
         booksList.innerHTML = '' // clear current
       
         books.forEach((book) => {
           const div = document.createElement('div')
           div.className = 'book'
+          let summaryHTML = book.summary ? `<p>${book.summary}</p>` : ''
+          let authors = book.authors
+            .map((author) => String(author.full_name) || 'skibidi')
+            .filter((name) => name)
+            .join(', ')
           div.innerHTML = `
-              <h3>${book.title}</h3>
-              <p><strong>Authors:</strong> ${book.authors}</p>
-              <p>${book.summary}</p>
-              <p><strong>isbn:</strong> ${book.isbn}</p>
-              `
+                          <h3>${book.title}</h3>
+                          <p><strong>Author(s):</strong> ${authors}</p>
+                          ${summaryHTML}
+                          <p><strong>ISBN-10:</strong> ${book.isbn_10}</p>
+                          `
           booksList.appendChild(div)
         })
       }
