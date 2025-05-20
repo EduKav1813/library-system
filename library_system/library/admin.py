@@ -5,9 +5,15 @@ from .models import Author, Book
 
 @admin.register(Author)
 class AuthorAdmin(admin.ModelAdmin):
-    list_display = ("full_name",)
-    search_fields = [
+    list_display = (
         "full_name",
+        "first_name",
+        "middle_name",
+        "last_name",
+        "date_of_birth",
+        "date_of_death",
+    )
+    search_fields = [
         "first_name",
         "middle_name",
         "last_name",
