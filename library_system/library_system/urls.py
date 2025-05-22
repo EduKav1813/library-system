@@ -27,7 +27,7 @@ router.register(r"books", BookViewSet)
 router.register(r"authors", AuthorViewSet)
 
 urlpatterns = [
-    path("", library_views.index_template, name="index"),
+    path("", library_views.index, name="index"),
     path("admin/", admin.site.urls),
     path("api/", include(router.urls)),
     path("api-auth/", include("rest_framework.urls")),
@@ -42,4 +42,5 @@ urlpatterns = [
         name="add-book-by-isbn-10",
     ),
     path("api/get-recent/", library_views.get_recent_books, name="get-recent-books"),
+    path("books/", library_views.books, name="books"),
 ]

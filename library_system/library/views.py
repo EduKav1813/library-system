@@ -19,17 +19,18 @@ def index(request):
     """
     recent_books = Book.objects.all().order_by("-id")[:5]
     serializer = BookSerializer(recent_books, many=True)
-    return Response(
-        {"message": "Welcome to the Library API", "recent_books": serializer.data}
-    )
+    return render(request, "index.html", {"recent_books": serializer.data})
 
 
-def index_template(request):
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def books(request):
     """
-    Render HTML landing page
+    Public view for the landing page
     """
-    recent_books = Book.objects.all().order_by("-id")[:5]
-    return render(request, "index.html", {"recent_books": recent_books})
+    recent_books = Book.objects.all().order_by("-id")
+    serializer = BookSerializer(recent_books, many=True)
+    return render(request, "books.html", {"books": serializer.data})
 
 
 def register_view(request):
@@ -105,9 +106,6 @@ def get_recent_books(request):
         n = int(request.query_params.get("number_of_books", 5))
     except (TypeError, ValueError):
         return Response({"error": "'number_of_books' must be an integer"}, status=400)
-
-    if n > 100:
-        return Response({"error": "'number_of_books' cannot exceed 100"}, status=400)
 
     recent_books = Book.get_recent_books(n)
     serializer = BookSerializer(recent_books, many=True)

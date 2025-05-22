@@ -54,6 +54,8 @@
       </div>
     </div>
 
+    {% include 'navbar.html' %}
+
     {% if user.is_authenticated %}
       <div style="margin-top: 20px;">
         <h2>Add a Book by ISBN</h2>
@@ -68,19 +70,6 @@
 
     <h2>Recent Books</h2>
     <div class="books-list"></div>
-
-    <div>
-      <h3>API Access</h3>
-      <p>To access the full library API, please login or register.</p>
-      <ul>
-        <li>
-          <a href="/api/books/">Books API</a> (requires authentication)
-        </li>
-        <li>
-          <a href="/api/authors/">Authors API</a> (requires authentication)
-        </li>
-      </ul>
-    </div>
 
     <script>
       document.addEventListener('DOMContentLoaded', function () {
@@ -158,15 +147,15 @@
           div.className = 'book'
           let summaryHTML = book.summary ? `<p>${book.summary}</p>` : ''
           let authors = book.authors
-            .map((author) => String(author.full_name) || 'skibidi')
+            .map((author) => String(author.full_name))
             .filter((name) => name)
             .join(', ')
           div.innerHTML = `
-                          <h3>${book.title}</h3>
-                          <p><strong>Author(s):</strong> ${authors}</p>
-                          ${summaryHTML}
-                          <p><strong>ISBN-10:</strong> ${book.isbn_10}</p>
-                          `
+                                <h3>${book.title}</h3>
+                                <p><strong>Author(s):</strong> ${authors}</p>
+                                ${summaryHTML}
+                                <p><strong>ISBN-10:</strong> ${book.isbn_10}</p>
+                                `
           booksList.appendChild(div)
         })
       }

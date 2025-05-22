@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <style>
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 220px;
+      background-color: #333;
+      padding-top: 20px;
+      color: white;
+      overflow-y: auto;
+    }
+    
+    .sidebar a,
+    .sidebar button.dropdown-btn {
+      padding: 10px 20px;
+      text-decoration: none;
+      color: white;
+      display: block;
+      background: none;
+      border: none;
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    
+    .sidebar a:hover,
+    .sidebar button.dropdown-btn:hover {
+      background-color: #575757;
+    }
+    
+    .sidebar h2 {
+      padding: 0 20px;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    
+    .dropdown-container {
+      display: none;
+      background-color: #444;
+      padding-left: 15px;
+    }
+    
+    .dropdown-container a {
+      padding: 8px 20px;
+    }
+    
+    .active-dropdown {
+      background-color: #575757;
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+      }
+    
+      .main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+
+  <body>
+    <div class="sidebar">
+      <h2>Library Menu</h2>
+      <a href="{% url 'index' %}">Home</a>
+      <a href="{% url 'books' %}">All Books</a>
+
+      <button class="dropdown-btn">API Reference ▸</button>
+      <div class="dropdown-container">
+        <a href="/api/books/">Books API</a>
+        <a href="/api/authors/">Authors API</a>
+        <!-- Add more nested API links here -->
+      </div>
+
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'logout' %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="dropdown-btn">Logout</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}">Login</a>
+        <a href="{% url 'register' %}">Register</a>
+      {% endif %}
+    </div>
+  </body>
+
+  <script>
+    // JavaScript to handle dropdown toggle
+    document.addEventListener('DOMContentLoaded', function () {
+      const dropdown = document.querySelector('.dropdown-btn')
+      const container = document.querySelector('.dropdown-container')
+    
+      dropdown.addEventListener('click', function () {
+        container.style.display = container.style.display === 'block' ? 'none' : 'block'
+        dropdown.classList.toggle('active-dropdown')
+      })
+    })
+  </script>
+</html>
