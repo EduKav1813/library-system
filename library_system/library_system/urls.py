@@ -42,4 +42,5 @@ urlpatterns = [
         name="add-book-by-isbn-10",
     ),
     path("api/get-recent/", library_views.get_recent_books, name="get-recent-books"),
+    path("books/", library_views.books, name="books"),
 ]

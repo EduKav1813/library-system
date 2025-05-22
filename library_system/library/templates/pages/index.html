@@ -164,11 +164,11 @@
             .filter((name) => name)
             .join(', ')
           div.innerHTML = `
-                          <h3>${book.title}</h3>
-                          <p><strong>Author(s):</strong> ${authors}</p>
-                          ${summaryHTML}
-                          <p><strong>ISBN-10:</strong> ${book.isbn_10}</p>
-                          `
+                                <h3>${book.title}</h3>
+                                <p><strong>Author(s):</strong> ${authors}</p>
+                                ${summaryHTML}
+                                <p><strong>ISBN-10:</strong> ${book.isbn_10}</p>
+                                `
           booksList.appendChild(div)
         })
       }
