@@ -160,7 +160,7 @@
           div.className = 'book'
           let summaryHTML = book.summary ? `<p>${book.summary}</p>` : ''
           let authors = book.authors
-            .map((author) => String(author.full_name) || 'skibidi')
+            .map((author) => String(author.full_name))
             .filter((name) => name)
             .join(', ')
           div.innerHTML = `
