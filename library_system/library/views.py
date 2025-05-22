@@ -19,17 +19,7 @@ def index(request):
     """
     recent_books = Book.objects.all().order_by("-id")[:5]
     serializer = BookSerializer(recent_books, many=True)
-    return Response(
-        {"message": "Welcome to the Library API", "recent_books": serializer.data}
-    )
-
-
-def index_template(request):
-    """
-    Render HTML landing page
-    """
-    recent_books = Book.objects.all().order_by("-id")[:5]
-    return render(request, "index.html", {"recent_books": recent_books})
+    return render(request, "index.html", {"recent_books": serializer.data})
 
 
 def register_view(request):
