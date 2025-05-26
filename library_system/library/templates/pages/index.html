@@ -18,6 +18,12 @@
         margin-bottom: 15px;
         border-radius: 5px;
       }
+      .activity {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+      }
       .header {
         display: flex;
         justify-content: space-between;
@@ -71,9 +77,13 @@
     <h2>Recent Books</h2>
     <div class="books-list"></div>
 
+    <h2>Recent Activity</h2>
+    <div class="recent-activity-list"></div>
+
     <script>
       document.addEventListener('DOMContentLoaded', function () {
-        refreshRecentBooks()
+        refreshRecentBooks();
+        refreshRecentActivity();
       })
       
       document.getElementById('isbn-form').addEventListener('submit', async function (e) {
@@ -156,6 +166,22 @@
                                 ${summaryHTML}
                                 <p><strong>ISBN-10:</strong> ${book.isbn_10}</p>
                                 `
+          booksList.appendChild(div)
+        })
+      }
+
+      async function refreshRecentActivity() {
+        const response = await fetch('/api/activity/recent/')
+        if (!response.ok) return
+        const data = await response.json()
+        const activity = data.recent_activity
+        const booksList = document.querySelector('.recent-activity-list')
+        booksList.innerHTML = '' // clear current
+      
+        activity.forEach((activity) => {
+          const div = document.createElement('div')
+          div.className = 'activity'
+          div.innerHTML = activity.string
           booksList.appendChild(div)
         })
       }

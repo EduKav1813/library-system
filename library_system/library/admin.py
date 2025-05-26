@@ -1,6 +1,5 @@
 from django.contrib import admin
-from library.models.author import Author
-from library.models.book import Book
+from library.models import Author, Book, UserAction
 
 
 @admin.register(Author)
@@ -39,3 +38,26 @@ class BookAdmin(admin.ModelAdmin):
     def display_authors(self, obj):
         """Create a string for the authors to display in Admin."""
         return obj.get_authors_display()
+
+
+@admin.register(UserAction)
+class UserActionAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "action_type",
+        "content_type",
+        "target",
+        "timestamp",
+        "comment",
+    )
+    search_fields = [
+        "user",
+        "action_type",
+        "content_type",
+        "target",
+        "timestamp",
+        "comment",
+    ]
+    # def display_authors(self, obj):
+    #     """Create a string for the authors to display in Admin."""
+    #     return obj.get_authors_display()

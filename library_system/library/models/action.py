@@ -7,8 +7,8 @@ User = get_user_model()
 
 
 class Action(models.TextChoices):
-    BORROW = "borrow", "Borrow"
-    RETURN = "return", "Return"
+    BORROW = "borrowed", "Borrowed"
+    RETURN = "returned", "Returned"
 
 
 class UserAction(models.Model):
@@ -28,4 +28,10 @@ class UserAction(models.Model):
         ordering = ["-timestamp"]
 
     def __str__(self):
-        return f"{self.user} {self.action_type} {self.target}"
+        return f"User '{self.user}' {self.action_type} '{self.target}'"
+
+    def get_recent(self, n=5) -> "Action":
+        if n < 1:
+            raise ValueError("Number of recent actions should be positive")
+
+        return UserAction.objects.all().order_by("-id")[:n]

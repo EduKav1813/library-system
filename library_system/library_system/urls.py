@@ -42,6 +42,9 @@ urlpatterns = [
         name="add-book-by-isbn-10",
     ),
     path("api/get-recent/", public.get_recent_books, name="get-recent-books"),
+    path(
+        "api/activity/recent/", public.get_recent_activity, name="get-recent-activity"
+    ),
     path("books/", public.books, name="books"),
     path("api/borrow/<int:book_id>/", book_actions.borrow_book, name="borrow_book"),
 ]
