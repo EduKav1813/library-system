@@ -1,11 +1,11 @@
 import requests
+from django.contrib.contenttypes.models import ContentType
+from django.shortcuts import get_object_or_404
+from library.models import Action, Author, Book, UserAction
+from library.serializers import BookSerializer
 from rest_framework import permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-
-from library.models.author import Author
-from library.models.book import Book
-from library.serializers import BookSerializer
 
 
 @api_view(["POST"])
@@ -54,3 +54,38 @@ def add_book_by_isbn_10(request):
     book.authors.set(Author.objects.filter(full_name__in=authors))
     serializer = BookSerializer(book)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated])
+def borrow_book(request, book_id):
+    """
+    Allows an authenticated user to borrow a book.
+    Creates a 'BORROW' action in the UserAction model.
+    """
+    user = request.user
+    book = get_object_or_404(Book, id=book_id)
+
+    # Prevent duplicate borrows (optional)
+    if UserAction.objects.filter(
+        user=user,
+        action_type=Action.BORROW,
+        content_type=ContentType.objects.get_for_model(Book),
+        object_id=book.id,
+    ).exists():
+        return Response(
+            {"error": "You have already borrowed this book."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    UserAction.objects.create(
+        user=user,
+        action_type=Action.BORROW,
+        content_type=ContentType.objects.get_for_model(Book),
+        object_id=book.id,
+    )
+
+    return Response(
+        {"message": f"You have borrowed '{book.title}'."},
+        status=status.HTTP_201_CREATED,
+    )

@@ -1,8 +1,6 @@
+from library.models import Author, Book
 from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
-
-from library.models.author import Author
-from library.models.book import Book
 
 
 class AuthorSerializer(serializers.ModelSerializer):
