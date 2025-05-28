@@ -18,7 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
-from library.views import auth, book_actions, public
+from library.views import auth, authorized, book_actions, public
 from library.viewsets import AuthorViewSet, BookViewSet
 from rest_framework import routers
 
@@ -46,6 +46,7 @@ urlpatterns = [
         "api/activity/recent/", public.get_recent_activity, name="get-recent-activity"
     ),
     path("books/", public.books, name="books"),
+    path("borrowed_books/", authorized.borrowed_books, name="borrowed_books"),
     path(
         "api/book/borrow/<int:book_id>/", book_actions.borrow_book, name="borrow_book"
     ),

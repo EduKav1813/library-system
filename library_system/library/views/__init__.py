@@ -1,1 +1,1 @@
-from . import auth, book_actions, public
+from . import auth, authorized, book_actions, public
