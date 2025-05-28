@@ -46,7 +46,10 @@ urlpatterns = [
         "api/activity/recent/", public.get_recent_activity, name="get-recent-activity"
     ),
     path("books/", public.books, name="books"),
-    path("borrowed_books/", authorized.borrowed_books, name="borrowed_books"),
+    path("borrowed-books/", authorized.borrowed_books_view, name="borrowed_books"),
+    path(
+        "api/borrowed-books/", authorized.borrowed_books_api, name="user_borrowed_books"
+    ),
     path(
         "api/book/borrow/<int:book_id>/", book_actions.borrow_book, name="borrow_book"
     ),

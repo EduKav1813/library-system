@@ -30,30 +30,144 @@
     {% include 'navbar.html' %}
 
     <h1>My Borrowed Books</h1>
-    {% if books %}
-        <div class="books-list">
-      {% for book in books %}
-        <div class="book">
-          <h3>{{ book.title }}</h3>
-          <p>
-            <strong>Authors:</strong>
-            {% for author in book.authors %}
-              {{ author.full_name }}{% if not forloop.last %}, {% endif %}
-            {% endfor %}
-          </p>
-          {% if book.summary %}
-            <p>{{ book.summary }}</p>
-          {% endif %}
-          <p>
-            <strong>IBN:</strong> {{ book.isbn_10 }}
-          </p>
-        </div>
-      {% endfor %}
-    {% else %}
-        You don't have any borrowed books at the moment
-    {% endif %}
-    
+    <div class="books-list"></div>
 
-    </div>
+    <script>
+      const userIsLoggedIn = {{ request.user.is_authenticated|yesno:"true,false" }};
+
+      document.addEventListener("DOMContentLoaded", function () {
+        refreshBooks();
+      });
+
+      async function refreshBooks() {
+        const response = await fetch("/books/");
+        if (!response.ok) {
+            console.error("Failed to fetch books:", response.statusText);
+            return;
+        }
+        const books = await response.json();
+        const booksList = document.querySelector(".books-list");
+        booksList.innerHTML = ""; // clear current
+
+        books.forEach((book) => {
+          const div = document.createElement("div");
+          div.className = "book";
+          let summaryHTML = book.summary ? `<p>${book.summary}</p>` : "";
+          let authors = book.authors
+            .map((author) => String(author.full_name))
+            .filter((name) => name)
+            .join(", ");
+          div.innerHTML = `
+          <h3>${book.title}</h3>
+          <p><strong>Author(s):</strong> ${authors}</p>
+          ${summaryHTML}
+          <p><strong>ISBN-10:</strong> ${book.isbn_10}</p>
+          ${
+            userIsLoggedIn
+              ? `<button class="borrow-btn"
+                        data-id="${book.id}"
+                        data-action="${
+                          book.is_borrowed_by_user ? "return" : "borrow"
+                        }">
+                  ${book.is_borrowed_by_user ? "Return" : "Borrow"}
+                </button>`
+              : ""
+          }
+        `;
+
+          booksList.appendChild(div);
+        });
+      }
+
+      // CSRF helper for Django
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";").map((c) => c.trim());
+          for (let cookie of cookies) {
+            if (cookie.startsWith(name + "=")) {
+              cookieValue = decodeURIComponent(cookie.split("=")[1]);
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+
+      async function refreshBooks() {
+        const response = await fetch("/api/borrowed-books/");
+        if (!response.ok) {
+            console.error("Failed to fetch books:", response.statusText);
+            return;
+        }
+        const books = await response.json();
+        const booksList = document.querySelector(".books-list");
+        booksList.innerHTML = ""; // clear current
+
+        books.forEach((book) => {
+          const div = document.createElement("div");
+          div.className = "book";
+          let summaryHTML = book.summary ? `<p>${book.summary}</p>` : "";
+          let authors = book.authors
+            .map((author) => String(author.full_name))
+            .filter((name) => name)
+            .join(", ");
+          div.innerHTML = `
+          <h3>${book.title}</h3>
+          <p><strong>Author(s):</strong> ${authors}</p>
+          ${summaryHTML}
+          <p><strong>ISBN-10:</strong> ${book.isbn_10}</p>
+          ${
+            userIsLoggedIn
+              ? `<button class="borrow-btn"
+                        data-id="${book.id}"
+                        data-action="${
+                          book.is_borrowed_by_user ? "return" : "borrow"
+                        }">
+                  ${book.is_borrowed_by_user ? "Return" : "Borrow"}
+                </button>`
+              : ""
+          }
+        `;
+
+          booksList.appendChild(div);
+        });
+      }
+
+      document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("borrow-btn")) {
+          const bookId = e.target.getAttribute("data-id");
+          const action = e.target.getAttribute("data-action");
+
+          if (action === "borrow") {
+            borrowBook(bookId);
+          } else {
+            returnBook(bookId);
+          }
+        }
+      });
+
+      function borrowBook(bookId) {
+        fetch(`/api/book/borrow/${bookId}/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+        })
+          .then((res) => res.json())
+          .then(() => location.reload());
+      }
+
+      function returnBook(bookId) {
+        fetch(`/api/book/return/${bookId}/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+        })
+          .then((res) => res.json())
+          .then(() => location.reload());
+      }
+    </script>
   </body>
 </html>
