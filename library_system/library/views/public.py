@@ -13,7 +13,7 @@ def index(request):
     Public view for the landing page
     """
     recent_books = Book.objects.all().order_by("-id")[:5]
-    serializer = BookSerializer(recent_books, many=True)
+    serializer = BookSerializer(recent_books, many=True, context={"request": request})
     return render(request, "index.html", {"recent_books": serializer.data})
 
 
@@ -24,7 +24,7 @@ def books(request):
     Public view for the landing page
     """
     recent_books = Book.objects.all().order_by("-id")
-    serializer = BookSerializer(recent_books, many=True)
+    serializer = BookSerializer(recent_books, many=True, context={"request": request})
     return render(request, "books.html", {"books": serializer.data})
 
 
@@ -40,7 +40,7 @@ def get_recent_books(request):
         return Response({"error": "'number_of_books' must be an integer"}, status=400)
 
     recent_books = Book.get_recent(n)
-    serializer = BookSerializer(recent_books, many=True)
+    serializer = BookSerializer(recent_books, many=True, context={"request": request})
     return Response({"recent_books": serializer.data})
 
 

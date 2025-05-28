@@ -1,5 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
-from library.models import Author, Book, UserAction
+from library.models import Action, Author, Book, UserAction
 from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
 
@@ -14,12 +14,62 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 class BookSerializer(serializers.ModelSerializer):
     authors = AuthorSerializer(many=True)
+    is_borrowed = serializers.SerializerMethodField()
+    is_borrowed_by_user = serializers.SerializerMethodField()
 
     class Meta:
         model = Book
-        fields = ["title", "summary", "isbn_10", "authors"]
+        fields = [
+            "id",
+            "title",
+            "summary",
+            "isbn_10",
+            "authors",
+            "is_borrowed",
+            "is_borrowed_by_user",
+        ]
 
     permission_classes = [IsAuthenticated]
+
+    def get_is_borrowed(self, obj) -> bool:
+        """Check if the book is borrowed at the moment.
+
+        Returns:
+            bool: True if book is borrowed, False if available.
+        """
+        book_ct = ContentType.objects.get_for_model(Book)
+
+        borrow_count = UserAction.objects.filter(
+            action_type=Action.BORROW, content_type=book_ct, object_id=obj.id
+        ).count()
+
+        return_count = UserAction.objects.filter(
+            action_type=Action.RETURN, content_type=book_ct, object_id=obj.id
+        ).count()
+
+        return borrow_count > return_count
+
+    def get_is_borrowed_by_user(self, obj) -> bool:
+        """Check if the book is borrowed by the specific user.
+
+        Returns:
+            bool: True if book is borrowed, False if available.
+        """
+        user = self.context["request"].user
+        if not user or not user.is_authenticated:
+            return False
+
+        book_ct = ContentType.objects.get_for_model(Book)
+
+        borrow_count = UserAction.objects.filter(
+            user=user, action_type=Action.BORROW, content_type=book_ct, object_id=obj.id
+        ).count()
+
+        return_count = UserAction.objects.filter(
+            user=user, action_type=Action.RETURN, content_type=book_ct, object_id=obj.id
+        ).count()
+
+        return borrow_count > return_count
 
 
 class UserActionSerializer(serializers.ModelSerializer):
