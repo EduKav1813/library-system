@@ -71,6 +71,11 @@
       <a href="{% url 'index' %}">Home</a>
       <a href="{% url 'books' %}">All Books</a>
 
+      {% if user.is_authenticated %}
+        <a href="{% url 'borrowed_books' %}">My Borrowed Books</a>
+      {% else %}
+      {% endif %}
+
       <button class="dropdown-btn">API Reference ▸</button>
       <div class="dropdown-container">
         <a href="/api/books/">Books API</a>

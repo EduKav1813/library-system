@@ -18,6 +18,12 @@
         margin-bottom: 15px;
         border-radius: 5px;
       }
+      .activity {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+      }
       .header {
         display: flex;
         justify-content: space-between;
@@ -42,122 +48,198 @@
       <h1>Welcome to the Library System</h1>
       <div class="auth-buttons">
         {% if user.is_authenticated %}
-          <span>Hello, {{ user.username }}!</span>
-          <form method="post" action="{% url 'logout' %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="button">Logout</button>
-          </form>
+        <span>Hello, {{ user.username }}!</span>
+        <form method="post" action="{% url 'logout' %}" style="display: inline">
+          {% csrf_token %}
+          <button type="submit" class="button">Logout</button>
+        </form>
         {% else %}
-          <a href="{% url 'login' %}" class="button">Login</a>
-          <a href="{% url 'register' %}" class="button">Register</a>
+        <a href="{% url 'login' %}" class="button">Login</a>
+        <a href="{% url 'register' %}" class="button">Register</a>
         {% endif %}
       </div>
     </div>
 
-    {% include 'navbar.html' %}
-
-    {% if user.is_authenticated %}
-      <div style="margin-top: 20px;">
-        <h2>Add a Book by ISBN</h2>
-        <form id="isbn-form">
-          {% csrf_token %}
-          <input type="text" id="isbn-10-input" placeholder="Enter ISBN-10" required />
-          <button type="submit" class="button">Add Book</button>
-        </form>
-        <div id="message" style="margin-top: 10px;"></div>
-      </div>
+    {% include 'navbar.html' %} {% if user.is_authenticated %}
+    <div style="margin-top: 20px">
+      <h2>Add a Book by ISBN</h2>
+      <form id="isbn-form">
+        {% csrf_token %}
+        <input
+          type="text"
+          id="isbn-10-input"
+          placeholder="Enter ISBN-10"
+          required
+        />
+        <button type="submit" class="button">Add Book</button>
+      </form>
+      <div id="message" style="margin-top: 10px"></div>
+    </div>
     {% endif %}
 
     <h2>Recent Books</h2>
     <div class="books-list"></div>
 
+    <h2>Recent Activity</h2>
+    <div class="recent-activity-list"></div>
+
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        refreshRecentBooks()
-      })
-      
-      document.getElementById('isbn-form').addEventListener('submit', async function (e) {
-        e.preventDefault() // Prevent default form submission
-      
-        const isbn_10 = document.getElementById('isbn-10-input').value.trim()
-        const messageDiv = document.getElementById('message')
-      
-        // Clear previous message
-        messageDiv.textContent = ''
-        messageDiv.style.color = ''
-      
-        if (!isbn_10) {
-          messageDiv.textContent = 'Please enter an ISBN-10.'
-          messageDiv.style.color = 'red'
-          return
-        }
-      
-        try {
-          const response = await fetch('/api/add-by-isbn-10/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({ isbn_10: isbn_10 })
-          })
-      
-          const data = await response.json()
-      
-          if (response.ok) {
-            messageDiv.textContent = `✅ Book "${data.title}" added successfully!`
-            messageDiv.style.color = 'green'
-            refreshRecentBooks()
-          } else {
-            messageDiv.textContent = `❌ ${data.error || 'Failed to add book.'}`
-            messageDiv.style.color = 'red'
+      const userIsLoggedIn = {{ request.user.is_authenticated|yesno:"true,false" }};
+
+      document.addEventListener("DOMContentLoaded", function () {
+        refreshRecentBooks();
+        refreshRecentActivity();
+      });
+
+      document
+        .getElementById("isbn-form")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault(); // Prevent default form submission
+
+          const isbn_10 = document.getElementById("isbn-10-input").value.trim();
+          const messageDiv = document.getElementById("message");
+
+          // Clear previous message
+          messageDiv.textContent = "";
+          messageDiv.style.color = "";
+
+          if (!isbn_10) {
+            messageDiv.textContent = "Please enter an ISBN-10.";
+            messageDiv.style.color = "red";
+            return;
           }
-        } catch (err) {
-          messageDiv.textContent = '❌ An unexpected error occurred.'
-          messageDiv.style.color = 'red'
-          console.error(err)
-        }
-      })
-      
+
+          try {
+            const response = await fetch("/api/add-by-isbn-10/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+              },
+              body: JSON.stringify({ isbn_10: isbn_10 }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              messageDiv.textContent = `✅ Book "${data.title}" added successfully!`;
+              messageDiv.style.color = "green";
+              refreshRecentBooks();
+            } else {
+              messageDiv.textContent = `❌ ${
+                data.error || "Failed to add book."
+              }`;
+              messageDiv.style.color = "red";
+            }
+          } catch (err) {
+            messageDiv.textContent = "❌ An unexpected error occurred.";
+            messageDiv.style.color = "red";
+            console.error(err);
+          }
+        });
+
       // CSRF helper for Django
       function getCookie(name) {
-        let cookieValue = null
-        if (document.cookie && document.cookie !== '') {
-          const cookies = document.cookie.split(';').map((c) => c.trim())
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";").map((c) => c.trim());
           for (let cookie of cookies) {
-            if (cookie.startsWith(name + '=')) {
-              cookieValue = decodeURIComponent(cookie.split('=')[1])
-              break
+            if (cookie.startsWith(name + "=")) {
+              cookieValue = decodeURIComponent(cookie.split("=")[1]);
+              break;
             }
           }
         }
-        return cookieValue
+        return cookieValue;
       }
-      
+
       async function refreshRecentBooks() {
-        const response = await fetch('/api/get-recent/')
-        if (!response.ok) return
-        const data = await response.json()
-        const books = data.recent_books
-        const booksList = document.querySelector('.books-list')
-        booksList.innerHTML = '' // clear current
-      
+        const response = await fetch("/api/get-recent/");
+        if (!response.ok) return;
+        const data = await response.json();
+        const books = data.recent_books;
+        const booksList = document.querySelector(".books-list");
+        booksList.innerHTML = ""; // clear current
+
         books.forEach((book) => {
-          const div = document.createElement('div')
-          div.className = 'book'
-          let summaryHTML = book.summary ? `<p>${book.summary}</p>` : ''
+          const div = document.createElement("div");
+          div.className = "book";
+          let summaryHTML = book.summary ? `<p>${book.summary}</p>` : "";
           let authors = book.authors
             .map((author) => String(author.full_name))
             .filter((name) => name)
-            .join(', ')
+            .join(", ");
           div.innerHTML = `
-                                <h3>${book.title}</h3>
-                                <p><strong>Author(s):</strong> ${authors}</p>
-                                ${summaryHTML}
-                                <p><strong>ISBN-10:</strong> ${book.isbn_10}</p>
-                                `
-          booksList.appendChild(div)
+            <h3>${book.title}</h3>
+            <p><strong>Author(s):</strong> ${authors}</p>
+            ${summaryHTML}
+            <p><strong>ISBN-10:</strong> ${book.isbn_10}</p>
+            ${
+              userIsLoggedIn
+                ? `<button class="borrow-btn"
+                          data-id="${book.id}"
+                          data-action="${
+                            book.is_borrowed_by_user ? "return" : "borrow"
+                          }">
+                    ${book.is_borrowed_by_user ? "Return" : "Borrow"}
+                  </button>`
+                : ""
+            }
+          `;
+
+          booksList.appendChild(div);
+        });
+      }
+
+      document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("borrow-btn")) {
+          const bookId = e.target.getAttribute("data-id");
+          const action = e.target.getAttribute("data-action");
+
+          if (action === "borrow") {
+            borrowBook(bookId);
+          } else {
+            returnBook(bookId);
+          }
+        }
+      });
+
+      async function refreshRecentActivity() {
+        const response = await fetch("/api/activity/recent/");
+        if (!response.ok) return;
+        const data = await response.json();
+        const activity = data.recent_activity;
+        const booksList = document.querySelector(".recent-activity-list");
+        booksList.innerHTML = ""; // clear current
+
+        activity.forEach((activity) => {
+          const div = document.createElement("div");
+          div.className = "activity";
+          div.innerHTML = activity.string;
+          booksList.appendChild(div);
+        });
+      }
+
+      function borrowBook(bookId) {
+        fetch(`/api/book/borrow/${bookId}/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
         })
+          .then((res) => res.json())
+          .then(() => location.reload());
+      }
+
+      function returnBook(bookId) {
+        fetch(`/api/book/return/${bookId}/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+        })
+          .then((res) => res.json())
+          .then(() => location.reload());
       }
     </script>
   </body>

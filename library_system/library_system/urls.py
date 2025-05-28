@@ -18,7 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
-from library import views as library_views
+from library.views import auth, authorized, book_actions, public
 from library.viewsets import AuthorViewSet, BookViewSet
 from rest_framework import routers
 
@@ -27,7 +27,7 @@ router.register(r"books", BookViewSet)
 router.register(r"authors", AuthorViewSet)
 
 urlpatterns = [
-    path("", library_views.index, name="index"),
+    path("", public.index, name="index"),
     path("admin/", admin.site.urls),
     path("api/", include(router.urls)),
     path("api-auth/", include("rest_framework.urls")),
@@ -35,12 +35,25 @@ urlpatterns = [
         "login/", auth_views.LoginView.as_view(template_name="login.html"), name="login"
     ),
     path("logout/", auth_views.LogoutView.as_view(next_page="/"), name="logout"),
-    path("register/", library_views.register_view, name="register"),
+    path("register/", auth.register_view, name="register"),
     path(
         "api/add-by-isbn-10/",
-        library_views.add_book_by_isbn_10,
+        book_actions.add_book_by_isbn_10,
         name="add-book-by-isbn-10",
     ),
-    path("api/get-recent/", library_views.get_recent_books, name="get-recent-books"),
-    path("books/", library_views.books, name="books"),
+    path("api/get-recent/", public.get_recent_books, name="get-recent-books"),
+    path(
+        "api/activity/recent/", public.get_recent_activity, name="get-recent-activity"
+    ),
+    path("books/", public.books, name="books"),
+    path("borrowed-books/", authorized.borrowed_books_view, name="borrowed_books"),
+    path(
+        "api/borrowed-books/", authorized.borrowed_books_api, name="user_borrowed_books"
+    ),
+    path(
+        "api/book/borrow/<int:book_id>/", book_actions.borrow_book, name="borrow_book"
+    ),
+    path(
+        "api/book/return/<int:book_id>/", book_actions.return_book, name="return_book"
+    ),
 ]

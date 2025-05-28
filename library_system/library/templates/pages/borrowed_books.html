@@ -29,8 +29,9 @@
   <body>
     {% include 'navbar.html' %}
 
-    <h1>Library</h1>
+    <h1>My Borrowed Books</h1>
     <div class="books-list"></div>
+
     <script>
       const userIsLoggedIn = {{ request.user.is_authenticated|yesno:"true,false" }};
 
@@ -39,7 +40,7 @@
       });
 
       async function refreshBooks() {
-        const response = await fetch("/api/books/");
+        const response = await fetch("/books/");
         if (!response.ok) {
             console.error("Failed to fetch books:", response.statusText);
             return;
@@ -93,11 +94,13 @@
         return cookieValue;
       }
 
-      async function refreshRecentBooks() {
-        const response = await fetch("/api/get-recent/");
-        if (!response.ok) return;
-        const data = await response.json();
-        const books = data.recent_books;
+      async function refreshBooks() {
+        const response = await fetch("/api/borrowed-books/");
+        if (!response.ok) {
+            console.error("Failed to fetch books:", response.statusText);
+            return;
+        }
+        const books = await response.json();
         const booksList = document.querySelector(".books-list");
         booksList.innerHTML = ""; // clear current
 
@@ -110,22 +113,22 @@
             .filter((name) => name)
             .join(", ");
           div.innerHTML = `
-            <h3>${book.title}</h3>
-            <p><strong>Author(s):</strong> ${authors}</p>
-            ${summaryHTML}
-            <p><strong>ISBN-10:</strong> ${book.isbn_10}</p>
-            ${
-              userIsLoggedIn
-                ? `<button class="borrow-btn"
-                          data-id="${book.id}"
-                          data-action="${
-                            book.is_borrowed_by_user ? "return" : "borrow"
-                          }">
-                    ${book.is_borrowed_by_user ? "Return" : "Borrow"}
-                  </button>`
-                : ""
-            }
-          `;
+          <h3>${book.title}</h3>
+          <p><strong>Author(s):</strong> ${authors}</p>
+          ${summaryHTML}
+          <p><strong>ISBN-10:</strong> ${book.isbn_10}</p>
+          ${
+            userIsLoggedIn
+              ? `<button class="borrow-btn"
+                        data-id="${book.id}"
+                        data-action="${
+                          book.is_borrowed_by_user ? "return" : "borrow"
+                        }">
+                  ${book.is_borrowed_by_user ? "Return" : "Borrow"}
+                </button>`
+              : ""
+          }
+        `;
 
           booksList.appendChild(div);
         });

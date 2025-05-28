@@ -1,7 +1,7 @@
+from library.models.author import Author
+from library.models.book import Book
+from library.serializers import AuthorSerializer, BookSerializer
 from rest_framework import viewsets
-
-from .models import Author, Book
-from .serializers import AuthorSerializer, BookSerializer
 
 
 class AuthorViewSet(viewsets.ModelViewSet):
